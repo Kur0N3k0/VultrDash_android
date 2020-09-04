@@ -21,7 +21,7 @@ class APIRequest (
             if (!response.isSuccessful) {
                 throw IOException("Unexpected code $response")
             }
-            callback(response.body!!.source())
+            return callback(response.body!!.source())
         }
     }
 
@@ -46,7 +46,7 @@ class APIRequest (
             if (!response.isSuccessful) {
                 throw IOException("Unexpected code $response")
             }
-            callback(response.body!!.source())
+            return callback(response.body!!.source())
         }
     }
 }

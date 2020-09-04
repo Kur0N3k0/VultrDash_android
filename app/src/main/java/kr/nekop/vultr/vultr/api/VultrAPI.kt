@@ -8,5 +8,6 @@ class VultrAPI(
 ) {
     val account: Account = Account(requestor)
     val application: Application = Application(requestor)
+    val backups: Backups = Backups(requestor)
 
 }

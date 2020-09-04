@@ -1,21 +1,16 @@
 package kr.nekop.vultr.vultr.api
 
-import com.squareup.moshi.Moshi
 import kr.nekop.vultr.vultr.api.util.APIRequest
-import okio.BufferedSource
+import kr.nekop.vultr.vultr.api.util.CallbackHelper
 
 class Account(
     val requestor: APIRequest
 ) {
     fun info() : AccountInfo? {
-        var result: AccountInfo ?= null
-        val callback = { resp: BufferedSource ->
-            val moshi = Moshi.Builder().build()
-            val adapter = moshi.adapter(AccountInfo::class.java)
-            result = adapter.fromJson(resp)
-        }
-        requestor.get("/account", callback)
-        return result
+        return requestor.get(
+            "/account",
+            CallbackHelper.parser<AccountInfo>()
+        ) as AccountInfo
     }
 }
 
