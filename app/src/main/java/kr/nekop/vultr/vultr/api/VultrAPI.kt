@@ -3,11 +3,11 @@ package kr.nekop.vultr.vultr.api
 import kr.nekop.vultr.vultr.api.util.APIRequest
 
 class VultrAPI(
-    val apiKey: String,
-    val requestor: APIRequest = APIRequest(apiKey)
+    private val apiKey: String,
+    requester: APIRequest = APIRequest(apiKey)
 ) {
-    val account: Account = Account(requestor)
-    val application: Application = Application(requestor)
-    val backups: Backups = Backups(requestor)
-
+    val account: Account = Account(requester)
+    val application: Application = Application(requester)
+    val backups: Backups = Backups(requester)
+    val baremetal: BareMetal = BareMetal(requester)
 }

@@ -1,17 +1,17 @@
 package kr.nekop.vultr.vultr.api
 
 import kr.nekop.vultr.vultr.api.util.APIRequest
-import kr.nekop.vultr.vultr.api.util.CallbackHelper
+import kr.nekop.vultr.vultr.api.util.RequestHelper
 
 class Application (
-    val requestor: APIRequest
+    private val requester: APIRequest
 ) {
     fun applications(per_page: Int = 25, cursor: String = "") : Applications? {
         var url = "/applications"
         if(per_page != 25 || !cursor.equals(""))
             url += "?per_page=$per_page&cursor=$cursor"
 
-        return requestor.get(url, CallbackHelper.parser<Applications>()) as Applications
+        return requester.get(url, RequestHelper.parser<Applications>()) as Applications
     }
 }
 

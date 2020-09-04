@@ -1,15 +1,15 @@
 package kr.nekop.vultr.vultr.api
 
 import kr.nekop.vultr.vultr.api.util.APIRequest
-import kr.nekop.vultr.vultr.api.util.CallbackHelper
+import kr.nekop.vultr.vultr.api.util.RequestHelper
 
 class Account(
-    val requestor: APIRequest
+    private val requester: APIRequest
 ) {
     fun info() : AccountInfo? {
-        return requestor.get(
+        return requester.get(
             "/account",
-            CallbackHelper.parser<AccountInfo>()
+            RequestHelper.parser<AccountInfo>()
         ) as AccountInfo
     }
 }

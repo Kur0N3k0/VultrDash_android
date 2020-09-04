@@ -1,20 +1,20 @@
 package kr.nekop.vultr.vultr.api
 
 import kr.nekop.vultr.vultr.api.util.APIRequest
-import kr.nekop.vultr.vultr.api.util.CallbackHelper
+import kr.nekop.vultr.vultr.api.util.RequestHelper
 
 class Backups (
-    val requestor: APIRequest
+    private val requester: APIRequest
 ) {
     fun backups(id: String, instance_id: String, per_page: Int = 25, cursor: String = "") : Backupx {
         var url = "/backups"
         if(!id.equals("") || !instance_id.equals("") || per_page != 25 || !cursor.equals(""))
             url += "?id=$id&instance_id=$instance_id&per_page=$per_page&cursor=$cursor"
-        return requestor.get(url, CallbackHelper.parser<Backupx>()) as Backupx
+        return requester.get(url, RequestHelper.parser<Backupx>()) as Backupx
     }
 
     fun getBackup(id: String) : BackupsDetail {
-        return requestor.get("/backups/$id", CallbackHelper.parser<BackupsDetail>()) as BackupsDetail
+        return requester.get("/backups/$id", RequestHelper.parser<BackupsDetail>()) as BackupsDetail
     }
 }
 
