@@ -10,4 +10,5 @@ class VultrAPI(
     val application: Application = Application(requester)
     val backups: Backups = Backups(requester)
     val baremetal: BareMetal = BareMetal(requester)
+    val blockstorage: BlockStorage = BlockStorage(requester)
 }

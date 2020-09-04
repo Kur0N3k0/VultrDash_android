@@ -1,9 +1,5 @@
 package kr.nekop.vultr.vultr.api
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import kr.nekop.vultr.vultr.api.util.APIRequest
 import kr.nekop.vultr.vultr.api.util.RequestHelper
 
@@ -91,6 +87,11 @@ class BareMetal (
             RequestHelper.jsonize(baremetal_ids),
             RequestHelper.parser<BareMetalResultIDs>()
         ) as BareMetalResultIDs
+    }
+
+    fun userData(baremetal_id: String) : BareMetalUserData {
+        val url = "/bare-metals/$baremetal_id/user-data"
+        return requester.get(url, RequestHelper.parser<BareMetalResultIDs>()) as BareMetalUserData
     }
 
     /*
@@ -195,4 +196,12 @@ data class BareMetalIPv6Detail (
 
 data class BareMetalResultIDs (
     val baremetal_ids: List<String>
+)
+
+data class BareMetalUserData (
+    val baremetal_ids: BareMetalUserDataDetail
+)
+
+data class BareMetalUserDataDetail (
+    val data: String
 )
