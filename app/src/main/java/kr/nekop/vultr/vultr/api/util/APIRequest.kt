@@ -55,6 +55,26 @@ class APIRequest (
         }
     }
 
+    fun put(url: String, parameters: String, callback: ((resp: BufferedSource) -> Any?)?): Any? {
+        val client = OkHttpClient()
+
+        val JSON = "application/json; charset=utf-8".toMediaType()
+        val body = parameters
+
+        val request = Request.Builder()
+            .url(baseUrl + url)
+            .header("Authorization", "Bearer $apiKey")
+            .put(body.toRequestBody(JSON))
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IOException("Unexpected code $response")
+            }
+            return callback?.invoke(response.body!!.source())
+        }
+    }
+
     fun patch(url: String, parameters: String, callback: ((resp: BufferedSource) -> Any?)?): Any? {
         val client = OkHttpClient()
 

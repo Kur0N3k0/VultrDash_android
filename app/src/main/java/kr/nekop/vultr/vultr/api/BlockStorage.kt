@@ -4,10 +4,12 @@ import kr.nekop.vultr.vultr.api.util.APIRequest
 import kr.nekop.vultr.vultr.api.util.RequestHelper
 
 class BlockStorage (
-    val requester: APIRequest
+    private val requester: APIRequest
 ){
-    fun blocks() : BlockStorageBlocks? {
-        val url = "/blocks"
+    fun blocks(per_page: Int, cursor: String) : BlockStorageBlocks? {
+        var url = "/blocks"
+        if(per_page != 25 || !cursor.equals(""))
+            url += "?per_page=$per_page&cursor=$cursor"
         return requester.get(url, RequestHelper.parser<BlockStorageBlocks>()) as BlockStorageBlocks
     }
 
