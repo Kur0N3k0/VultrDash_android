@@ -64,7 +64,38 @@ class DNS (
         return requester.get(url, RequestHelper.parser<DNSSec>()) as DNSSec
     }
 
+    fun createRecord(dns_domain: String, param: DNSCreateRecord) : DNSRecord? {
+        val url = "/domains/$dns_domain/records"
+        return requester.post(
+            url,
+            RequestHelper.jsonize(param),
+            RequestHelper.parser<DNSRecord>()
+        ) as DNSRecord
+    }
 
+    fun getRecords(dns_domain: String) : DNSRecords {
+        val url = "/domains/$dns_domain/records"
+        return requester.get(url, RequestHelper.parser<DNSRecords>()) as DNSRecords
+    }
+
+    fun getRecord(dns_domain: String, record_id: String) : DNSRecord {
+        val url = "/domains/$dns_domain/records/$record_id"
+        return requester.get(url, RequestHelper.parser<DNSRecord>()) as DNSRecord
+    }
+
+    fun updateRecord(dns_domain: String, record_id: String, param: DNSUpdateRecord) : Any? {
+        val url = "/domains/$dns_domain/records/$record_id"
+        return requester.patch(
+            url,
+            RequestHelper.jsonize(param),
+            null
+        )
+    }
+
+    fun deleteRecord(dns_domain: String, record_id: String) : Any? {
+        val url = "/domains/$dns_domain/records/$record_id"
+        return requester.delete(url, null)
+    }
 }
 
 data class DNSDomains (
@@ -102,4 +133,37 @@ data class DNSSOADetail (
 
 data class DNSSec (
     val dns_sec: List<String>
+)
+
+data class DNSCreateRecord (
+    val name: String,
+    val type: String,
+    val data: String,
+    val ttl: Int,
+    val priority: Int
+)
+
+data class DNSRecord (
+    val record: DNSRecordDetail
+)
+
+data class DNSRecordDetail (
+    val id: String,
+    val type: String,
+    val name: String,
+    val data: String,
+    val priority: Int,
+    val ttl: Int
+)
+
+data class DNSRecords (
+    val records: List<DNSRecordDetail>,
+    val meta: Meta
+)
+
+data class DNSUpdateRecord (
+    val name: String,
+    val data: String,
+    val ttl: Int,
+    val priority: Int
 )
