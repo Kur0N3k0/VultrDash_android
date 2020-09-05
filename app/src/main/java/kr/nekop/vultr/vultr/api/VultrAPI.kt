@@ -12,4 +12,5 @@ class VultrAPI(
     val baremetal: BareMetal = BareMetal(requester)
     val blockstorage: BlockStorage = BlockStorage(requester)
     val dns: DNS = DNS(requester)
+    val firewall: Firewall = Firewall(requester)
 }
