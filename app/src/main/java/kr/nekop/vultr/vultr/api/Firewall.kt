@@ -100,7 +100,7 @@ data class FirewalLRulesDetail (
     val action: String,
     val protocol: String,
     val port: String,
-    val subnet, String,
+    val subnet: String,
     val subnet_size: Int,
     val source: String,
     val note: String
@@ -111,12 +111,12 @@ data class FirewallCreateRule (
     val action: String,
     val protocol: String,
     val port: String,
-    val subnet, String,
+    val subnet: String,
     val subnet_size: Int,
     val source: String,
     val note: String
 )
 
 data class FirewallRule (
-    val firewall_rule: FirewalLRulesDetail,
+    val firewall_rule: FirewalLRulesDetail
 )
