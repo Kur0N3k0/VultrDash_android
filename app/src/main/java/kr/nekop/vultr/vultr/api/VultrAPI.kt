@@ -15,4 +15,5 @@ class VultrAPI(
     val firewall: Firewall = Firewall(requester)
     val iso: ISO = ISO(requester)
     val loadbalancer: LoadBalancer = LoadBalancer(requester)
+    val objectstorage: ObjectStorage = ObjectStorage(requester)
 }

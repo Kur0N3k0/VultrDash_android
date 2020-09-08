@@ -102,3 +102,10 @@ data class ObjectStorageClusters (
     val clusters: List<ObjectStorageClusterDetail>,
     val meta: Meta
 )
+
+data class ObjectStorageClusterDetail (
+    val id: String,
+    val region: String,
+    val hostname: String,
+    val deploy: String
+)
