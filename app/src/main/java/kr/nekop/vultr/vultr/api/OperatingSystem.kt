@@ -7,7 +7,7 @@ class OperatingSystem (
     private val requester: APIRequest
 ) {
     fun listOS(per_page: Int, cursor: String) : OperatingSystemOSs? {
-        var url = "/object-storage"
+        var url = "/os"
         if(per_page != 25 || !cursor.equals(""))
             url += "?per_page=$per_page&cursor=$cursor"
 
