@@ -6,7 +6,7 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class BareMetal (
     private val requester: APIRequest
 ) {
-    fun getInstanceList(per_page: Int = 25, cursor: String = "") : BareMetals? {
+    fun listInstance(per_page: Int = 25, cursor: String = "") : BareMetals? {
         var url = "/bare-metals"
         if(per_page != 25 || !cursor.equals(""))
             url += "?per_page=$per_page&cursor=$cursor"
