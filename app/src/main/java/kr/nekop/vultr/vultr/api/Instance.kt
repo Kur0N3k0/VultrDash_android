@@ -6,9 +6,13 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class Instance (
     private val requester: APIRequest
 ) {
-    fun list(per_page: Int, cursor: String, filter: InstanceListFilter?) : Instances? {
+    val create_backups = listOf("enabled", "disabled")
+    val update_backups = listOf("enable", "disable")
+    val backup_types = listOf("daily", "weekly", "monthly", "daily_alt_even", "daily_alt_odd")
+
+    fun listInstance(per_page: Int = 25, cursor: String = "", filter: InstanceListFilter?) : Instances? {
         var url = "/instances"
-        if(per_page != 25 || !cursor.equals(""))
+        if(per_page != 25 || cursor != "")
             url += "?per_page=$per_page&cursor=$cursor"
         if(filter != null) {
             url += "&instance_id=${filter.instance_id}&tag=${filter.tag}&label=${filter.label}&main_ip=${filter.main_ip}"
@@ -17,29 +21,40 @@ class Instance (
         return requester.get(url, RequestHelper.parser<Instances>()) as Instances
     }
 
-    fun createInstance(param: InstanceCreate) : InstanceResult? {
+    fun createInstance(param: InstanceCreate) : Instancex? {
         val url = "/instances"
-        if(param.region.isEmpty() || param.plan.isEmpty())
-            throw Exception("InstanceCreate::region, plan must not be empty")
+        if(param.region.isEmpty())
+            throw Exception("InstanceCreate::region must not be empty")
+        if(param.plan.isEmpty())
+            throw Exception("InstanceCreate::plan must not be empty")
+        if(param.backups != null && create_backups.indexOf(param.backups) == -1)
+            throw Exception("InstanceCreate::backups must be enabled or disabled")
+
         return requester.post(
             url,
             RequestHelper.jsonize(param),
-            RequestHelper.parser<InstanceResult>()
-        ) as InstanceResult
+            RequestHelper.parser<Instancex>()
+        ) as Instancex
     }
 
-    fun getInstance(instance_id: String) : InstanceResult? {
+    fun getInstance(instance_id: String) : Instancex? {
         val url = "/instances/$instance_id"
-        return requester.get(url, RequestHelper.parser<InstanceResult>()) as InstanceResult
+        return requester.get(url, RequestHelper.parser<Instancex>()) as Instancex
     }
 
-    fun updateInstance(instance_id: String, param: InstanceUpdate) : Any? {
+    fun updateInstance(instance_id: String, param: InstanceUpdate?) : Any? {
         val url = "/instances/$instance_id"
-        return requester.patch(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            if(update_backups.indexOf(param.backups) == -1)
+                throw Exception("InstanceUpdate::backups must be enable or disable")
+
+            return requester.patch(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.patch(url, "", null)
     }
 
     fun deleteInstance(instance_id: String) : Any? {
@@ -92,13 +107,16 @@ class Instance (
         )
     }
 
-    fun reinstallInstance(instance_id: String, param: InstanceReinstall) : Any? {
+    fun reinstallInstance(instance_id: String, param: InstanceReinstall?) : Any? {
         val url = "/instances/$instance_id/start"
-        return requester.post(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.post(url, "", null)
     }
 
     fun bandwidth(instance_id: String) : InstanceBandwidth? {
@@ -111,8 +129,10 @@ class Instance (
         return requester.get(url, RequestHelper.parser<InstanceNeighborList>()) as InstanceNeighborList
     }
 
-    fun getPrivateNetwork(instance_id: String) : InstancePrivateNetworks? {
-        val url = "/instances/$instance_id/private_networks"
+    fun getPrivateNetwork(per_page: Int = 25, cursor: String = "", instance_id: String) : InstancePrivateNetworks? {
+        var url = "/instances/$instance_id/private_networks"
+        if(per_page != 25 || cursor != "")
+            url += "?per_page=$per_page&cursor=$cursor"
         return requester.get(url, RequestHelper.parser<InstancePrivateNetworks>()) as InstancePrivateNetworks
     }
 
@@ -121,13 +141,16 @@ class Instance (
         return requester.get(url, RequestHelper.parser<InstanceISOStatus>()) as InstanceISOStatus
     }
 
-    fun attachISO(instance_id: String, param: InstanceISOID) : Any? {
+    fun attachISO(instance_id: String, param: InstanceISOID?) : Any? {
         val url = "/instances/$instance_id/iso/attach"
-        return requester.post(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.post(url, "", null)
     }
 
     fun detachISO(instance_id: String) : Any? {
@@ -139,25 +162,38 @@ class Instance (
         )
     }
 
-    fun attachPrivateNetwork(instance_id: String, param: InstancePrivateNetworkID) : Any? {
+    fun attachPrivateNetwork(instance_id: String, param: InstancePrivateNetworkID?) : Any? {
         val url = "/instances/$instance_id/private-networks/attach"
-        return requester.post(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.post(url, "", null)
     }
 
-    fun detachPrivateNetwork(instance_id: String, param: InstancePrivateNetworkID) : Any? {
+    fun detachPrivateNetwork(instance_id: String, param: InstancePrivateNetworkID?) : Any? {
         val url = "/instances/$instance_id/private-networks/detach"
-        return requester.post(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.post(url, "", null)
     }
 
     fun setBackupSchedule(instance_id: String, param: InstanceSetBackupSchedule) : InstanceBackupSchedule? {
+        if(param.type.isEmpty())
+            throw Exception("InstanceSetBackupSchedule::type must not be empty")
+        if(backup_types.indexOf(param.type) == -1)
+            throw Exception("InstanceSetBackupSchedule::type must be Instance::backup_types")
+        if(param.dow != null && (param.dow < 1 || param.dow > 7))
+            throw Exception("InstanceSetBackupSchedule::type must be 1 <= dow <= 7")
+
         val url = "/instances/$instance_id/backup-schedule"
         return requester.post(
             url,
@@ -171,25 +207,37 @@ class Instance (
         return requester.get(url, RequestHelper.parser<InstanceBackupSchedule>()) as InstanceBackupSchedule
     }
 
-    fun restoreInstance(instance_id: String, param: InstanceBackupID) : Any? {
+    fun restoreInstance(instance_id: String, param: InstanceBackupID?) : Any? {
         val url = "/instances/$instance_id/restore"
-        return requester.post(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.post(url, "", null)
     }
 
-    fun getIPv4(instance_id: String) : InstanceIPv4s? {
-        val url = "/instances/$instance_id/ipv4"
+    fun getIPv4(per_page: Int = 25, cursor: String = "", instance_id: String) : InstanceIPv4s? {
+        var url = "/instances/$instance_id/ipv4"
+        if(per_page != 25 || cursor != "")
+            url += "?per_page=$per_page&cursor=$cursor"
         return requester.get(url, RequestHelper.parser<InstanceIPv4s>()) as InstanceIPv4s
     }
 
-    fun createIPv4(instance_id: String, param: InstanceCreateIPv4) : InstanceIPv4? {
+    fun createIPv4(instance_id: String, param: InstanceCreateIPv4?) : InstanceIPv4? {
         val url = "/instances/$instance_id/ipv4"
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                RequestHelper.parser<InstanceIPv4>()
+            ) as InstanceIPv4
+        }
         return requester.post(
             url,
-            RequestHelper.jsonize(param),
+            "",
             RequestHelper.parser<InstanceIPv4>()
         ) as InstanceIPv4
     }
@@ -204,6 +252,11 @@ class Instance (
     }
 
     fun createReverseIPv6(instance_id: String, param: InstanceReverseIPv6) : Any? {
+        if(param.ip.isEmpty())
+            throw Exception("InstanceReverseIPv6::ip must not be empty")
+        if(param.reverse.isEmpty())
+            throw Exception("InstanceReverseIPv6::reverse must not be empty")
+
         val url = "/instances/$instance_id/ipv6/reverse"
         return requester.post(
             url,
@@ -218,6 +271,11 @@ class Instance (
     }
 
     fun createReverseIPv4(instance_id: String, param: InstanceReverseIPv4) : Any? {
+        if(param.ip.isEmpty())
+            throw Exception("InstanceReverseIPv4::ip must not be empty")
+        if(param.reverse.isEmpty())
+            throw Exception("InstanceReverseIPv4::reverse must not be empty")
+
         val url = "/instances/$instance_id/ipv4/reverse"
         return requester.post(
             url,
@@ -240,13 +298,16 @@ class Instance (
         )
     }
 
-    fun setDefaultReverseDNSEntry(instance_id: String, param: InstanceSetDefaultReverseDNSEntry) : Any? {
+    fun setDefaultReverseDNSEntry(instance_id: String, param: InstanceSetDefaultReverseDNSEntry?) : Any? {
         val url = "/instances/$instance_id/ipv4/reverse/default"
-        return requester.post(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.post(url, "", null)
     }
 
     fun deleteIPv4(instance_id: String, ipv4: String) : Any? {
@@ -308,28 +369,28 @@ data class InstanceDetail (
 data class InstanceCreate (
     val region: String,
     val plan: String,
-    val os_id: Int,
-    val ipxe_chain_url: String,
-    val iso_id: String,
-    val script_id: Int,
-    val snapshot_id: String,
-    val enable_ipv6: Boolean,
-    val attach_private_network: List<String>,
-    val detach_private_network: List<String>,
-    val label: String,
-    val sshkey_id: String,
-    val backups: String,
-    val app_id: Int,
-    val user_data: String,
-    val ddos_protection: Boolean,
-    val activation_email: Boolean,
-    val hostname: String,
-    val tag: String,
-    val firewall_groupd_id: String,
-    val reserved_ipv4: String
+    val os_id: Int?,
+    val ipxe_chain_url: String?,
+    val iso_id: String?,
+    val script_id: Int?,
+    val snapshot_id: String?,
+    val enable_ipv6: Boolean?,
+    val attach_private_network: List<String>?,
+    val detach_private_network: List<String>?,
+    val label: String?,
+    val sshkey_id: String?,
+    val backups: String?,
+    val app_id: Int?,
+    val user_data: String?,
+    val ddos_protection: Boolean?,
+    val activation_email: Boolean?,
+    val hostname: String?,
+    val tag: String?,
+    val firewall_groupd_id: String?,
+    val reserved_ipv4: String?
 )
 
-data class InstanceResult (
+data class Instancex (
     val instance: List<InstanceDetail>
 )
 
@@ -389,9 +450,9 @@ data class InstancePrivateNetworkID (
 
 data class InstanceSetBackupSchedule (
     val type: String,
-    val hour: Int,
-    val dow: Int,
-    val dom: Int
+    val hour: Int?,
+    val dow: Int?,
+    val dom: Int?
 )
 
 data class InstanceBackupSchedule (

@@ -6,7 +6,7 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class ObjectStorage (
     private val requester: APIRequest
 ) {
-    fun listStorage(per_page: Int, cursor: String) : ObjectStorages? {
+    fun listStorage(per_page: Int = 25, cursor: String = "") : ObjectStorages? {
         var url = "/object-storage"
         if(per_page != 25 || !cursor.equals(""))
             url += "?per_page=$per_page&cursor=$cursor"

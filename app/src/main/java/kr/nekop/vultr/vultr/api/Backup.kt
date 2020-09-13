@@ -6,10 +6,11 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class Backup (
     private val requester: APIRequest
 ) {
-    fun listBackup(id: String, instance_id: String, per_page: Int = 25, cursor: String = "") : Backups {
+    fun listBackup(per_page: Int = 25, cursor: String = "", id: String, instance_id: String) : Backups {
         var url = "/backups"
-        if(!id.equals("") || !instance_id.equals("") || per_page != 25 || !cursor.equals(""))
+        if(id != "" || instance_id != "" || per_page != 25 || cursor != "")
             url += "?id=$id&instance_id=$instance_id&per_page=$per_page&cursor=$cursor"
+
         return requester.get(url, RequestHelper.parser<Backups>()) as Backups
     }
 

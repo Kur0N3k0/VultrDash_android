@@ -6,15 +6,23 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class LoadBalancer (
     private val requester: APIRequest
 ) {
-    fun listLoadBalancers(per_page: Int, cursor: String) : LoadBalancers? {
+    val balancing_algorithms = listOf("roundrobin", "leastconn")
+    val protocols = listOf("HTTP", "HTTPS", "TCP")
+
+    fun listLoadBalancers(per_page: Int = 25, cursor: String = "") : LoadBalancers? {
         var url = "/load-balancers"
-        if(per_page != 25 || !cursor.equals(""))
+        if(per_page != 25 || cursor != "")
             url += "?per_page=$per_page&cursor=$cursor"
 
         return requester.get(url, RequestHelper.parser<LoadBalancers>()) as LoadBalancers
     }
 
     fun createLoadBalancer(param: LoadBalancerCreate) : LoadBalancerx? {
+        if(param.region.isEmpty())
+            throw Exception("LoadBalacnerCreate::region must not be empty")
+        if(param.balancing_algorithm != null && balancing_algorithms.indexOf(param.balancing_algorithm) == -1)
+            throw Exception("LoadBalacnerCreate::balancing_algorithms must be LoadBalancer::balancing_algorithms")
+
         val url = "/load-balancers"
         return requester.post(
             url,
@@ -30,6 +38,8 @@ class LoadBalancer (
 
     fun updateLoadBalancer(load_balancer_id: String, param: LoadBalancerUpdate) : Any? {
         val url = "/load-balancers/$load_balancer_id"
+        if(param.balancing_algorithm != null && balancing_algorithms.indexOf(param.balancing_algorithm) == -1)
+            throw Exception("LoadBalancerUpdate::balancing_algorithms must be LoadBalancer::balancing_algorithms")
         return requester.patch(
             url,
             RequestHelper.jsonize(param),
@@ -42,12 +52,23 @@ class LoadBalancer (
         return requester.delete(url, null)
     }
 
-    fun listForwardingRules(load_balancer_id: String) : LoadBalancerForwardRules? {
-        val url = "/load-balancers/$load_balancer_id/forwarding-rules"
+    fun listForwardingRules(per_page: Int = 25, cursor: String = "", load_balancer_id: String) : LoadBalancerForwardRules? {
+        var url = "/load-balancers/$load_balancer_id/forwarding-rules"
+        if(per_page != 25 || cursor != "")
+            url += "?per_page=$per_page&cursor=$cursor"
         return requester.get(url, RequestHelper.parser<LoadBalancerForwardRules>()) as LoadBalancerForwardRules
     }
 
     fun createForwardingRules(load_balancer_id: String, param: LoadBalancerCreateForwardRule) : LoadBalancerCreateForwardRule? {
+        if(protocols.indexOf(param.frontend_protocol) == -1)
+            throw Exception("LoadBalancerCreateForwardRule::frontend_protocol must be LoadBalancer::protocols")
+        if(param.frontend_port < 0 || param.frontend_port > 65535)
+            throw Exception("LoadBalancerCreateForwardRule::frontend_port must be 1 <= port <= 65535")
+        if(protocols.indexOf(param.backend_protocol) == -1)
+            throw Exception("LoadBalancerCreateForwardRule::backend_protocol must be LoadBalancer::protocols")
+        if(param.backend_port < 0 || param.backend_port > 65535)
+            throw Exception("LoadBalancerCreateForwardRule::backend_port must be 1 <= port <= 65535")
+
         val url = "/load-balancers/$load_balancer_id/forwarding-rules"
         return requester.post(
             url,
@@ -117,15 +138,15 @@ data class LoadBalancerForwardRuleDetail (
 
 data class LoadBalancerCreate (
     val region: String,
-    val balancing_algorithm: String,
-    val ssl_redirect: Boolean,
-    val proxy_protocol: String,
-    val health_check: LoadBalancerHealthCheck,
-    val forwarding_rules: List<LoadBalancerCreateForwardRule>,
-    val sticky_sessions: LoadBalancerStickySession,
-    val ssl: LoadBalancerSSL,
-    val label: String,
-    val instance: List<String>
+    val balancing_algorithm: String?,
+    val ssl_redirect: Boolean?,
+    val proxy_protocol: String?,
+    val health_check: LoadBalancerHealthCheck?,
+    val forwarding_rules: List<LoadBalancerCreateForwardRule>?,
+    val sticky_sessions: LoadBalancerStickySession?,
+    val ssl: LoadBalancerSSL?,
+    val label: String?,
+    val instance: List<String>?
 )
 
 data class LoadBalancerx (
@@ -137,14 +158,14 @@ data class LoadBalancerSSL (
 )
 
 data class LoadBalancerUpdate (
-    val ssl: LoadBalancerSSL,
-    val sticky_sessions: LoadBalancerStickySession,
-    val forwarding_rules: LoadBalancerForwardRuleDetail,
-    val health_check: LoadBalancerHealthCheck,
-    val proxy_protocol: String,
-    val ssl_redirect: Boolean,
-    val balancing_algorithm: String,
-    val instance: List<String>
+    val ssl: LoadBalancerSSL?,
+    val sticky_sessions: LoadBalancerStickySession?,
+    val forwarding_rules: LoadBalancerForwardRuleDetail?,
+    val health_check: LoadBalancerHealthCheck?,
+    val proxy_protocol: String?,
+    val ssl_redirect: Boolean?,
+    val balancing_algorithm: String?,
+    val instance: List<String>?
 )
 
 data class LoadBalancerForwardRules (

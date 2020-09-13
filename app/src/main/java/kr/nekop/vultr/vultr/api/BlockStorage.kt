@@ -6,10 +6,11 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class BlockStorage (
     private val requester: APIRequest
 ){
-    fun blocks(per_page: Int, cursor: String) : BlockStorageBlocks? {
+    fun blocks(per_page: Int = 25, cursor: String = "") : BlockStorageBlocks? {
         var url = "/blocks"
-        if(per_page != 25 || !cursor.equals(""))
+        if(per_page != 25 || cursor != "")
             url += "?per_page=$per_page&cursor=$cursor"
+
         return requester.get(url, RequestHelper.parser<BlockStorageBlocks>()) as BlockStorageBlocks
     }
 
@@ -51,6 +52,9 @@ class BlockStorage (
     }
 
     fun attachBlock(block_id: String, param: BlockStorageAttach) : Any? {
+        if(param.instance_id.isEmpty())
+            throw Exception("BlockStorageAttach::instance_id must not be empty")
+
         val url = "/blocks/$block_id/attach"
         return requester.post(
             url,

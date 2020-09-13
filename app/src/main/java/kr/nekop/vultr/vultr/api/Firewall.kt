@@ -6,9 +6,13 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class Firewall (
     private val requester: APIRequest
 ) {
-    fun list(per_page: Int, cursor: String) : FirewallGroups? {
+    val ip_types = listOf("v4", "v6")
+    val protocols = listOf("ICMP", "TCP", "UDP", "GRE")
+    val sources = listOf("", "cloudflare")
+
+    fun listFirewall(per_page: Int = 25, cursor: String = "") : FirewallGroups? {
         var url = "/firewalls"
-        if(per_page != 25 || !cursor.equals(""))
+        if(per_page != 25 || cursor != "")
             url += "?per_page=$per_page&cursor=$cursor"
 
         return requester.get(url, RequestHelper.parser<FirewallGroups>()) as FirewallGroups
@@ -37,6 +41,9 @@ class Firewall (
 
     fun updateGroup(firewall_group_id: String, param: FirewallUpdateGroup) : Any? {
         val url = "/firewalls/$firewall_group_id"
+        if(param.description.isEmpty())
+            throw Exception("FirewallUpdateGroup::description must not be empty")
+
         return requester.put(
             url,
             RequestHelper.jsonize(param),
@@ -49,14 +56,26 @@ class Firewall (
         return requester.delete(url, null)
     }
 
-    fun listRules(per_page: Int, cursor: String, firewall_group_id: String) : FirewallRules? {
+    fun listRules(per_page: Int = 25, cursor: String = "", firewall_group_id: String) : FirewallRules? {
         var url = "/firewalls/$firewall_group_id/rules"
-        if(per_page != 25 || !cursor.equals(""))
+        if(per_page != 25 || cursor != "")
             url += "?per_page=$per_page&cursor=$cursor"
+
         return requester.get(url, RequestHelper.parser<FirewallRules>()) as FirewallRules
     }
 
     fun createRule(firewall_group_id: String, param: FirewallCreateRule) : FirewallRule? {
+        if(param.ip_type.isEmpty())
+            throw Exception("FirewallCreateRule::ip_type must not be empty")
+        if(param.protocol.isEmpty())
+            throw Exception("FirewallCreateRule::protocol must not be empty")
+        if(param.subnet.isEmpty())
+            throw Exception("FirewallCreateRule::subnet must not be empty")
+        if(param.subnet_size < 0 || param.subnet_size > 32)
+            throw Exception("FirewallCreateRule::subnet_size must be 1 < subnet_size <= 32")
+        if(param.source != null && sources.indexOf(param.source) == -1)
+            throw Exception("FirewallCreateRule::source must be empty or cloudflare")
+
         val url = "/firewalls/$firewall_group_id/rules"
         return requester.post(
             url,

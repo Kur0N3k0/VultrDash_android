@@ -6,15 +6,22 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class DNS (
     private val requester: APIRequest
 ) {
-    fun list(per_page: Int, cursor: String) : DNSDomains? {
+    val types = listOf(
+        "A", "AAAA", "CNAME", "NS", "MX", "SRV", "TXT", "CAA", "SSHFP"
+    )
+
+    fun listDNS(per_page: Int = 25, cursor: String = "") : DNSDomains? {
         var url = "/domains"
-        if(per_page != 25 || !cursor.equals(""))
+        if(per_page != 25 || cursor != "")
             url += "?per_page=$per_page&cursor=$cursor"
 
         return requester.get(url, RequestHelper.parser<DNSDomains>()) as DNSDomains
     }
 
     fun createDomain(param: DNSDomainCreate) : DNSDomainx? {
+        if(param.domain.isEmpty())
+            throw Exception("DNSDOmainCreate::domain must not be empty")
+
         val url = "/domains"
         return requester.post(
             url,
@@ -34,8 +41,8 @@ class DNS (
     }
 
     fun updateDomain(dns_domain: String, param: DNSDomainUpdate) : Any? {
-        if(!param.dns_sec.equals("enabled") && !param.dns_sec.equals("disabled"))
-            throw Exception("DNSDomainUpdate::dns_sec is must be enabled or disabled")
+        if(param.dns_sec != "enabled" && param.dns_sec != "disabled")
+            throw Exception("DNSDomainUpdate::dns_sec must be enabled or disabled")
 
         val url = "/domains/$dns_domain"
         return requester.put(
@@ -68,6 +75,16 @@ class DNS (
     }
 
     fun createRecord(dns_domain: String, param: DNSCreateRecord) : DNSRecord? {
+        if(param.name.isEmpty())
+            throw Exception("DNSCreateRecord::name must not be empty")
+        if(param.type.isEmpty())
+            throw Exception("DNSCreateRecord::type must not be empty")
+        if(param.data.isEmpty())
+            throw Exception("DNSCreateRecord::data must not be empty")
+
+        if(types.indexOf(param.type) == -1)
+            throw Exception("DNSCreateRecord::type must in DNS::types")
+
         val url = "/domains/$dns_domain/records"
         return requester.post(
             url,
@@ -76,8 +93,11 @@ class DNS (
         ) as DNSRecord
     }
 
-    fun getRecords(dns_domain: String) : DNSRecords {
-        val url = "/domains/$dns_domain/records"
+    fun getRecords(per_page: Int = 25, cursor: String = "", dns_domain: String) : DNSRecords {
+        var url = "/domains/$dns_domain/records"
+        if(per_page != 25 || cursor != "")
+            url += "?per_page=$per_page&cursor=$cursor"
+
         return requester.get(url, RequestHelper.parser<DNSRecords>()) as DNSRecords
     }
 

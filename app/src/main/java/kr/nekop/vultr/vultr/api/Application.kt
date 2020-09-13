@@ -8,7 +8,7 @@ class Application (
 ) {
     fun applications(per_page: Int = 25, cursor: String = "") : Applications? {
         var url = "/applications"
-        if(per_page != 25 || !cursor.equals(""))
+        if(per_page != 25 || cursor != "")
             url += "?per_page=$per_page&cursor=$cursor"
 
         return requester.get(url, RequestHelper.parser<Applications>()) as Applications

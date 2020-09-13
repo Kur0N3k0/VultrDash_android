@@ -6,34 +6,34 @@ import kr.nekop.vultr.vultr.api.util.RequestHelper
 class ISO (
     private val requester: APIRequest
 ) {
-    fun list(per_page: Int, cursor: String) : ISOs? {
+    fun listISO(per_page: Int = 25, cursor: String = "") : ISOs? {
         var url = "/iso"
-        if(per_page != 25 || !cursor.equals(""))
+        if(per_page != 25 || cursor != "")
             url += "?per_page=$per_page&cursor=$cursor"
 
         return requester.get(url, RequestHelper.parser<Instances>()) as ISOs
     }
 
-    fun create(param: ISOCreateURL) : ISOCreateResult? {
+    fun create(param: ISOCreateURL) : ISOx? {
         val url = "/iso"
         return requester.post(
             url,
             RequestHelper.jsonize(param),
-            RequestHelper.parser<ISOCreateResult>()
-        ) as ISOCreateResult
+            RequestHelper.parser<ISOx>()
+        ) as ISOx
     }
 
-    fun get(iso_id: String) : ISOGetResult? {
+    fun getISO(iso_id: String) : ISOGetResult? {
         val url = "/iso/$iso_id"
         return requester.get(url, RequestHelper.parser<ISOGetResult>()) as ISOGetResult
     }
 
-    fun delete(iso_id: String) : Any? {
+    fun deleteISO(iso_id: String) : Any? {
         val url = "/iso/$iso_id"
         return requester.delete(url, null)
     }
 
-    fun publicList() : ISOPublics? {
+    fun listPublic() : ISOPublics? {
         val url = "/iso-public"
         return requester.get(url, RequestHelper.parser<ISOPublics>()) as ISOPublics
     }
@@ -58,11 +58,11 @@ data class ISOCreateURL (
     val url: String
 )
 
-data class ISOCreateResult (
-    val iso: ISOCreateResultDetail
+data class ISOx (
+    val iso: ISOxDetail
 )
 
-data class ISOCreateResultDetail (
+data class ISOxDetail (
     val id: String,
     val date_created: String,
     val filename: String,
