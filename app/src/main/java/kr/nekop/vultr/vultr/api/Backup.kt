@@ -3,27 +3,31 @@ package kr.nekop.vultr.vultr.api
 import kr.nekop.vultr.vultr.api.util.APIRequest
 import kr.nekop.vultr.vultr.api.util.RequestHelper
 
-class Backups (
+class Backup (
     private val requester: APIRequest
 ) {
-    fun backups(id: String, instance_id: String, per_page: Int = 25, cursor: String = "") : Backupx {
+    fun listBackup(id: String, instance_id: String, per_page: Int = 25, cursor: String = "") : Backups {
         var url = "/backups"
         if(!id.equals("") || !instance_id.equals("") || per_page != 25 || !cursor.equals(""))
             url += "?id=$id&instance_id=$instance_id&per_page=$per_page&cursor=$cursor"
-        return requester.get(url, RequestHelper.parser<Backupx>()) as Backupx
+        return requester.get(url, RequestHelper.parser<Backups>()) as Backups
     }
 
-    fun getBackup(id: String) : BackupsDetail {
-        return requester.get("/backups/$id", RequestHelper.parser<BackupsDetail>()) as BackupsDetail
+    fun getBackup(id: String) : Backupx {
+        return requester.get("/backups/$id", RequestHelper.parser<Backupx>()) as Backupx
     }
 }
 
-data class Backupx (
-    val backups: List<BackupsDetail>,
+data class Backups (
+    val backups: List<BackupDetail>,
     val meta: List<Meta>
 )
 
-data class BackupsDetail (
+data class Backupx (
+    val backup: BackupDetail
+)
+
+data class BackupDetail (
     val id: String,
     val date_created: String,
     val description: String,

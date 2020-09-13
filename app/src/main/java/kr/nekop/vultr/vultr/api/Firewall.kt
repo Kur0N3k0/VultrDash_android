@@ -14,11 +14,18 @@ class Firewall (
         return requester.get(url, RequestHelper.parser<FirewallGroups>()) as FirewallGroups
     }
 
-    fun createGroup(param: FirewallCreateGroup) : FirewallGroup? {
+    fun createGroup(param: FirewallCreateGroup?) : FirewallGroup? {
         val url = "/firewalls"
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                RequestHelper.parser<FirewallGroup>()
+            ) as FirewallGroup
+        }
         return requester.post(
             url,
-            RequestHelper.jsonize(param),
+            "",
             RequestHelper.parser<FirewallGroup>()
         ) as FirewallGroup
     }
@@ -42,8 +49,10 @@ class Firewall (
         return requester.delete(url, null)
     }
 
-    fun listRules(firewall_group_id: String) : FirewallRules? {
-        val url = "/firewalls/$firewall_group_id/rules"
+    fun listRules(per_page: Int, cursor: String, firewall_group_id: String) : FirewallRules? {
+        var url = "/firewalls/$firewall_group_id/rules"
+        if(per_page != 25 || !cursor.equals(""))
+            url += "?per_page=$per_page&cursor=$cursor"
         return requester.get(url, RequestHelper.parser<FirewallRules>()) as FirewallRules
     }
 
@@ -59,6 +68,11 @@ class Firewall (
     fun deleteRule(firewall_group_id: String, firewall_rule_id: String) : Any? {
         val url = "/firewalls/$firewall_group_id/rules/$firewall_rule_id"
         return requester.delete(url, null)
+    }
+
+    fun getRule(firewall_group_id: String, firewall_rule_id: String) : FirewallRule? {
+        val url = "/firewalls/$firewall_group_id/rules/$firewall_rule_id"
+        return requester.get(url, RequestHelper.parser<FirewallRule>()) as FirewallRule
     }
 }
 
@@ -110,11 +124,11 @@ data class FirewallCreateRule (
     val ip_type: String,
     val action: String,
     val protocol: String,
-    val port: String,
+    val port: String?,
     val subnet: String,
     val subnet_size: Int,
-    val source: String,
-    val note: String
+    val source: String?,
+    val notes: String?
 )
 
 data class FirewallRule (

@@ -13,7 +13,7 @@ class BlockStorage (
         return requester.get(url, RequestHelper.parser<BlockStorageBlocks>()) as BlockStorageBlocks
     }
 
-    fun createBlock(param: BlockStorageCreate) : BareMetalDetail? {
+    fun createBlock(param: BlockStorageCreate) : BareMetalx2? {
         if(param.region.isEmpty())
             throw Exception("BlockStorageCreate::region must not be empty")
 
@@ -24,13 +24,13 @@ class BlockStorage (
         return requester.post(
             url,
             RequestHelper.jsonize(param),
-            RequestHelper.parser<BareMetalDetail>()
-        ) as BareMetalDetail
+            RequestHelper.parser<BareMetalx2>()
+        ) as BareMetalx2
     }
 
-    fun getBlock(block_id: String) : BlockStorageBlockDetail? {
+    fun getBlock(block_id: String) : BlockStorageBlockx? {
         val url = "/blocks/$block_id"
-        return requester.get(url, RequestHelper.parser<BlockStorageBlockDetail>()) as BlockStorageBlockDetail
+        return requester.get(url, RequestHelper.parser<BlockStorageBlockx>()) as BlockStorageBlockx
     }
 
     fun deleteBlock(block_id: String) : Any? {
@@ -38,13 +38,16 @@ class BlockStorage (
         return requester.delete(url, null)
     }
 
-    fun updateBlock(block_id: String, param: BlockStorageUpdate) : Any? {
+    fun updateBlock(block_id: String, param: BlockStorageUpdate?) : Any? {
         val url = "/blocks/$block_id"
-        return requester.patch(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            return requester.patch(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.patch(url, "", null)
     }
 
     fun attachBlock(block_id: String, param: BlockStorageAttach) : Any? {
@@ -56,19 +59,26 @@ class BlockStorage (
         )
     }
 
-    fun detachBlock(block_id: String, param: BlockStorageDetach) : Any? {
+    fun detachBlock(block_id: String, param: BlockStorageDetach?) : Any? {
         val url = "/blocks/$block_id/detach"
-        return requester.post(
-            url,
-            RequestHelper.jsonize(param),
-            null
-        )
+        if(param != null) {
+            return requester.post(
+                url,
+                RequestHelper.jsonize(param),
+                null
+            )
+        }
+        return requester.post(url, "", null)
     }
 }
 
 data class BlockStorageBlocks (
     val blocks: List<BlockStorageBlockDetail>,
     val meta: Meta
+)
+
+data class BlockStorageBlockx (
+    val block: BlockStorageBlockDetail
 )
 
 data class BlockStorageBlockDetail (
@@ -85,19 +95,19 @@ data class BlockStorageBlockDetail (
 data class BlockStorageCreate (
     val region: String,
     val size_gb: Int,
-    val label: String
+    val label: String?
 )
 
 data class BlockStorageUpdate (
-    val label: String,
-    val size_gb: Int
+    val label: String?,
+    val size_gb: Int?
 )
 
 data class BlockStorageAttach (
     val instance_id: String,
-    val live: Boolean
+    val live: Boolean?
 )
 
 data class BlockStorageDetach (
-    val live: Boolean
+    val live: Boolean?
 )

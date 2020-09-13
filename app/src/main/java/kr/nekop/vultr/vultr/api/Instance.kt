@@ -101,10 +101,9 @@ class Instance (
         )
     }
 
-    // TODO: parse it
-    fun bandwidth(instance_id: String) : Any? {
+    fun bandwidth(instance_id: String) : InstanceBandwidth? {
         val url = "/instances/$instance_id/bandwidth"
-        return requester.get(url, null)
+        return requester.get(url, RequestHelper.parser<InstanceBandwidth>()) as InstanceBandwidth
     }
 
     fun getNeighbors(instance_id: String) : InstanceNeighborList? {
@@ -469,4 +468,13 @@ data class InstanceUserDataDetail (
 
 data class InstanceSetDefaultReverseDNSEntry (
     val ip: String
+)
+
+data class InstanceBandwidth (
+    val bandwidth: Map<String, InstanceBandwidthDetail>
+)
+
+data class InstanceBandwidthDetail (
+    val incoming_bytes: Int,
+    val outgoing_bytes: Int
 )

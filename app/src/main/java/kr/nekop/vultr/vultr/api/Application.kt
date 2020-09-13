@@ -16,10 +16,10 @@ class Application (
 }
 
 data class Applications (
-    val applications: List<ApplicationsDetail>
+    val applications: List<ApplicationDetail>
 )
 
-data class ApplicationsDetail (
+data class ApplicationDetail (
     val id: Int,
     val name: String,
     val short_name: String,
